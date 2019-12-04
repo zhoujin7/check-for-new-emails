@@ -21,19 +21,19 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Install-Module -Name BurntToast -Scope CurrentUser
 ```
 
-**Ubuntu 18.04/Linux Mint 19**
+**Debian/Ubuntu**
 
 默认使用`notify-send`发送桌面通知, 如果系统没有该命令, 则会使用`notify2`发送桌面通知, 所以你必须保证这两者有其一.
 
 安装notify-send (Ubuntu 18.04/Linux Mint 19自带了该命令, Kubuntu则没有它)
 ```bash
-# 通过apt安装 (on Debian/Ubuntu)
+# 通过apt安装
 sudo apt install libnotify-bin
 ```
 
 或者安装notify2
 ```bash
-# 通过apt安装 (on Debian/Ubuntu)
+# 通过apt安装
 sudo apt install python3-notify2
 # 或者通过pip安装
 python3 -m pip install -U notify2
