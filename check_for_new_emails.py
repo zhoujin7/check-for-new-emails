@@ -94,6 +94,7 @@ def main():
     while True:
         # 只在指定时间段内接收邮件 9:00-22:00
         now = datetime.datetime.now().time()
+        # datetime.time(hour: int, minute: int, second: int)
         start_time = datetime.time(9, 0, 0)
         end_time = datetime.time(22, 0, 0)
         if start_time < now < end_time:
