@@ -71,7 +71,7 @@ def html_to_txt(html):
     if sys.platform.startswith('linux'):
         text = text.replace('"', r'\"')
     elif sys.platform.startswith('win32'):
-        text = text.replace("'", "''")
+        text = text.replace("'", "''").replace("‘","‘‘").replace("’","’’")
     elif sys.platform.startswith('darwin'):
         # 没有苹果电脑→_→
         pass
@@ -114,6 +114,7 @@ def check_emails(host='', user='', password=''):
                 notify_send(mail)
             except Exception as e:
                 logging.error(e)
+                logging.error(f'Subject: {mail.subject}\nFrom: {mail.from_}\nTo: {mail.to_}')
                 alert('Error occurred when call notify_send, see check_emails.log for details.')
 
 
@@ -154,6 +155,7 @@ def notify_send(mail):
             n.show()
         elif completed_process.returncode != 0:
             logging.error(completed_process.stderr)
+            logging.error(f'Subject: {mail.subject}\nFrom: {mail.from_}\nTo: {mail.to_}')
             alert('Error occurred when invoke notify-send, see check_emails.log for details.')
 
     elif sys.platform.startswith('win32'):
@@ -164,6 +166,7 @@ def notify_send(mail):
             ''', shell=True, encoding=locale.getdefaultlocale()[1], stderr=subprocess.PIPE)
         if completed_process.returncode:
             logging.error(completed_process.stderr)
+            logging.error(f'Subject: {mail.subject}\nFrom: {mail.from_}\nTo: {mail.to_}')
             alert('Error occurred when invoke New-BurntToastNotification, see check_emails.log for details.')
 
     elif sys.platform.startswith('darwin'):
@@ -184,7 +187,7 @@ def alert(message):
     elif sys.platform.startswith('win32'):
         subprocess.run(
             f'''powershell -command "Add-Type -AssemblyName PresentationFramework;\
-                [System.Windows.MessageBox]::Show('{message}','Error','OK','Error')"
+                [System.Windows.MessageBox]::Show('{message}','Error','OK','Error') | Out-Null"
             ''', shell=True, encoding=locale.getdefaultlocale()[1], stderr=subprocess.PIPE)
 
     elif sys.platform.startswith('darwin'):
