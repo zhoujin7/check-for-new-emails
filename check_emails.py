@@ -80,42 +80,48 @@ def html_to_txt(html):
 
 def check_emails(host='', user='', password=''):
     imap_client = imaplib.IMAP4_SSL(host)
-    imap_client.login(user, password)
-    imap_client.select('INBOX')
-    is_ok, msg_ids = imap_client.search(None, 'UnSeen')
-    for msg_id in msg_ids[0].split():
-        is_ok, raw_msg = imap_client.fetch(msg_id, '(RFC822)')
-        policy = email.policy.default
-        msg = email.message_from_bytes(raw_msg[0][1], policy=policy)
+    try:
+        imap_client.login(user, password)
+    except imaplib.IMAP4.error as e:
+        logging.error(user)
+        logging.error(e)
+        alert(user + ' login fail. Password is incorrect or service is not open.')
+    else:
+        imap_client.select('INBOX')
+        is_ok, msg_ids = imap_client.search(None, 'UnSeen')
+        for msg_id in msg_ids[0].split():
+            is_ok, raw_msg = imap_client.fetch(msg_id, '(RFC822)')
+            policy = email.policy.default
+            msg = email.message_from_bytes(raw_msg[0][1], policy=policy)
 
-        mail = Mail()
-        mail.from_ = msg.get('From')
-        mail.to_ = msg.get('To')
-        mail.subject = msg.get('Subject')
-        mail.date = msg.get('Date')
+            mail = Mail()
+            mail.from_ = msg.get('From')
+            mail.to_ = msg.get('To')
+            mail.subject = msg.get('Subject')
+            mail.date = msg.get('Date')
 
-        body = msg.get_body(preferencelist='plain')
-        if body:
-            mail.text_content = body.get_content()
-        body = msg.get_body(preferencelist='html')
-        if body:
-            mail.html_content = body.get_content()
+            body = msg.get_body(preferencelist='plain')
+            if body:
+                mail.text_content = body.get_content()
+            body = msg.get_body(preferencelist='html')
+            if body:
+                mail.html_content = body.get_content()
 
-        mail.subject = html_to_txt(mail.subject)
-        mail.from_ = html_to_txt(mail.from_)
-        mail.to_ = html_to_txt(mail.to_)
-        if mail.text_content:
-            mail.text_content = html_to_txt(mail.text_content)
-        else:
-            mail.text_content = html_to_txt(mail.html_content)
+            mail.subject = html_to_txt(mail.subject)
+            mail.from_ = html_to_txt(mail.from_)
+            mail.to_ = html_to_txt(mail.to_)
+            if mail.text_content:
+                mail.text_content = html_to_txt(mail.text_content)
+            else:
+                mail.text_content = html_to_txt(mail.html_content)
 
-        if is_new_email(mail):
-            try:
-                notify_send(mail)
-            except Exception as e:
-                logging.error(e)
-                logging.error(f'Subject: {mail.subject}\nFrom: {mail.from_}\nTo: {mail.to_}')
-                alert('Error occurred when call notify_send, see check_emails.log for details.')
+            if is_new_email(mail):
+                try:
+                    notify_send(mail)
+                except Exception as e:
+                    logging.error(e)
+                    logging.error(f'Subject: {mail.subject}\nFrom: {mail.from_}\nTo: {mail.to_}')
+                    alert('Error occurred when call notify_send, see check_emails.log for details.')
 
 
 def is_new_email(mail):
