@@ -4,7 +4,6 @@ import hashlib
 import imaplib
 import locale
 import logging
-import os
 import re
 import sqlite3
 import subprocess
@@ -15,9 +14,10 @@ from threading import Timer
 
 from bs4 import BeautifulSoup
 
-py_script_root = str(Path(__file__).resolve().parent)
-email_db_path = py_script_root + os.sep + 'check_emails.db'
-logging.basicConfig(filename=py_script_root + os.sep + 'check_emails.log', level=logging.ERROR)
+py_script_root = Path(__file__).resolve().parent
+email_db_path = str(py_script_root / 'check_emails.db')
+logging.basicConfig(filename=str(py_script_root / 'check_emails.log'), format='%(asctime)s %(levelname)s %(message)s',
+                    level=logging.ERROR)
 
 
 def create_email_db(db_path):
@@ -71,7 +71,7 @@ def html_to_txt(html):
     if sys.platform.startswith('linux'):
         text = text.replace('"', r'\"')
     elif sys.platform.startswith('win32'):
-        text = text.replace("'", "''").replace("‘","‘‘").replace("’","’’")
+        text = text.replace("'", "''").replace("‘", "‘‘").replace("’", "’’")
     elif sys.platform.startswith('darwin'):
         # 没有苹果电脑→_→
         pass
@@ -84,7 +84,7 @@ def check_emails(host='', user='', password=''):
         imap_client.login(user, password)
     except imaplib.IMAP4.error as e:
         logging.error(user)
-        logging.error(e)
+        logging.exception(e)
         alert(user + ' login fail. Password is incorrect or service is not open.')
     else:
         imap_client.select('INBOX')
@@ -119,7 +119,7 @@ def check_emails(host='', user='', password=''):
                 try:
                     notify_send(mail)
                 except Exception as e:
-                    logging.error(e)
+                    logging.exception(e)
                     logging.error(f'Subject: {mail.subject}\nFrom: {mail.from_}\nTo: {mail.to_}')
                     alert('Error occurred when call notify_send, see check_emails.log for details.')
 
@@ -147,7 +147,7 @@ def notify_send(mail):
     if len(mail.text_content) > 200:
         mail.text_content = f'{mail.text_content[:200]}...'
 
-    icon = py_script_root + os.sep + 'check_emails.png'
+    icon = str(py_script_root / 'check_emails.png')
 
     if sys.platform.startswith('linux'):
         completed_process = subprocess.run(
@@ -205,11 +205,11 @@ def main():
     create_email_db(email_db_path)
     cleanup_email_db()
     while True:
-        # 只在指定时间段内接收邮件 9:00-22:00
+        # 只在指定时间段内接收邮件 9:00-23:00
         now = datetime.datetime.now().time()
         # datetime.time(hour: int, minute: int, second: int)
         start_time = datetime.time(9, 0, 0)
-        end_time = datetime.time(22, 0, 0)
+        end_time = datetime.time(23, 0, 0)
         if start_time < now < end_time:
             # 参数user: 邮箱帐号, password: 邮箱密码
             check_emails(host='imap.qq.com', user='account@qq.com', password='')

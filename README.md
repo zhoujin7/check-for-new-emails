@@ -43,11 +43,11 @@ python3 -m pip install -U notify2
 
 编辑 check_for_new_emails.py
 ```python
-# 只在指定时间段内接收邮件 9:00-22:00
+# 只在指定时间段内接收邮件 9:00-23:00
 now = datetime.datetime.now().time()
 # datetime.time(hour: int, minute: int, second: int)
 start_time = datetime.time(9, 0, 0)
-end_time = datetime.time(22, 0, 0)
+end_time = datetime.time(23, 0, 0)
 if start_time < now < end_time:
     # 参数user: 邮箱帐号, password: 邮箱密码
     check_emails(host='imap.qq.com', user='account@qq.com', password='')
